@@ -1,4 +1,4 @@
-# 1. Ablak indítása - Indítsd el a 600x400-as ablakot és állítsd be, hogy a játék 10 FPS-sel fusson.
+# 2. Kígyó kirajzolása - Rajzolj egy 20x20 pixeles zöld négyzetet a képernyő közepére.
 
 import pygame
 
@@ -8,20 +8,26 @@ kepernyo = pygame.display.set_mode((600, 400))
 
 ora = pygame.time.Clock()
 
+kigyo_meret = 20
+kigyo_x = (600 - kigyo_meret) // 2
+kigyo_y = (400 - kigyo_meret) // 2
+
+zold = (0, 255, 0)
+
+fut = True
+
 # Játék fő ciklusa
-while True:
+while fut:
     # Események kezelése (pl. kilépés)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            pygame.quit()
-            exit()
+            fut = False
 
     # Képernyő törlés
-    kepernyo.fill((0, 0, 0))  # Fekete háttér
+    kepernyo.fill((0, 0, 0))
 
-    # Frissítjük a képernyőt
+    pygame.draw.rect(kepernyo, zold, (kigyo_x, kigyo_y, kigyo_meret, kigyo_meret))
     pygame.display.flip()
+    ora.tick(60)
 
-    # Állítsuk be a 10 FPS-t
-    ora.tick(10)  # 10 FPS beállítása
-    
+pygame.quit() 
