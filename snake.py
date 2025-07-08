@@ -1,4 +1,4 @@
-# 2. Kígyó kirajzolása - Rajzolj egy 20x20 pixeles zöld négyzetet a képernyő közepére.
+# 3. Billentyűkezelés - A kurzor nyilai 20 pixellel mozgatják a kígyó fejét.
 
 import pygame
 
@@ -22,6 +22,15 @@ while fut:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             fut = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                kigyo_x -= 20
+            if event.key == pygame.K_RIGHT:
+                kigyo_x += 20
+            if event.key == pygame.K_UP:
+                kigyo_y -= 20
+            if event.key == pygame.K_DOWN:
+                kigyo_y += 20
 
     # Képernyő törlés
     kepernyo.fill((0, 0, 0))
