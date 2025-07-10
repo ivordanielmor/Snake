@@ -1,9 +1,13 @@
-# HÁZI FELADAT: Állítsd be ,hogy a kígyó folyamatosan mozogjon (ne csak a billentyűlenyomásra)
-#  és a mozgás irányát a legutolsó nyílbillentyű-esemény határozza meg.
+# 1. Étel generálása a rácsra - 
+# Generálj minden körben véletlenszerű (x, y) pozíciót, ha nincs aktív "food", és rajzolj egy piros négyzetet oda.
 
 import pygame
+import random
 
 pygame.init()
+
+szelesseg = 1920
+magassag = 1080
 
 kepernyo = pygame.display.set_mode((1920, 1080))
 
@@ -14,10 +18,17 @@ kigyo_x = (1920 - kigyo_meret) // 2
 kigyo_y = (1080 - kigyo_meret) // 2
 
 # Mozgásirány változók (sebesség pixelben)
+racs_szelesseg = szelesseg // kigyo_meret
+racs_magassag = magassag // kigyo_meret
+
+etelx = random.randint(0, racs_szelesseg - 1) * kigyo_meret
+etely = random.randint(0, racs_magassag - 1) * kigyo_meret
+
 sebesseg_x = 20
 sebesseg_y = 0
 
 zold = (0, 255, 0)
+piros = (200, 40, 40)
 
 fut = True
 
@@ -47,6 +58,7 @@ while fut:
     kepernyo.fill((0, 0, 0))
 
     pygame.draw.rect(kepernyo, zold, (kigyo_x, kigyo_y, kigyo_meret, kigyo_meret))
+    pygame.draw.rect(kepernyo, piros, (etelx, etely, 20, 20))
     pygame.display.flip()
     ora.tick(10)
 
