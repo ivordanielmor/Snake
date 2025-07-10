@@ -1,4 +1,4 @@
-# 2. Evés detektálása, kígyó növelése - Ha a kígyó feje rákerül az ételre, növeld a pontszámot és hosszabítsd a kígyót.
+# 3. Pontszám kiírása - A pontszám minden körben a bal felső sarokban.
 
 import pygame
 import random
@@ -30,6 +30,8 @@ piros = (200, 40, 40)
 
 kigyo_test = []
 hossz = 1
+
+betutipus = pygame.font.SysFont(None, 40)
 
 fut = True
 
@@ -70,6 +72,9 @@ while fut:
         pygame.draw.rect(kepernyo, zold, (x, y, kigyo_meret, kigyo_meret))
 
     pygame.draw.rect(kepernyo, piros, (etelx, etely, kigyo_meret, kigyo_meret))
+
+    pontszoveg = betutipus.render(f"Pont: {hossz - 1}", True, (255, 255, 255))
+    kepernyo.blit(pontszoveg, (10, 10))
 
     pygame.display.flip()
     ora.tick(10)
