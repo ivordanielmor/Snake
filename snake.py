@@ -1,4 +1,4 @@
-# 3. Pontszám kiírása - A pontszám minden körben a bal felső sarokban.
+# HÁZI FELADAT: Tegyél be különböző színű "nagyobb ételdarabokat" (pl. sárga blokk), amelyek +3 pontot érnek és ritkábban jelennek meg.
 
 import pygame
 import random
@@ -19,17 +19,24 @@ kigyo_y = (magassag // 2) // kigyo_meret * kigyo_meret
 racs_szelesseg = szelesseg // kigyo_meret
 racs_magassag = magassag // kigyo_meret
 
-etelx = random.randint(0, racs_szelesseg - 1) * kigyo_meret
-etely = random.randint(0, racs_magassag - 1) * kigyo_meret
+piros_etelx = random.randint(0, racs_szelesseg - 1) * kigyo_meret
+piros_etely = random.randint(0, racs_magassag - 1) * kigyo_meret
 
 sebesseg_x = 20
 sebesseg_y = 0
 
 zold = (0, 255, 0)
 piros = (200, 40, 40)
+sarga = (255, 255, 0)
+
+sarga_etel_x = -kigyo_meret
+sarga_etel_y = -kigyo_meret
+sarga_aktiv = False
 
 kigyo_test = []
 hossz = 1
+
+pontszam = 0
 
 betutipus = pygame.font.SysFont(None, 40)
 
@@ -57,23 +64,37 @@ while fut:
     kigyo_y += sebesseg_y
 
     kigyo_test.append((kigyo_x, kigyo_y))
-
     if len(kigyo_test) > hossz:
         del kigyo_test[0]
 
-    if kigyo_x == etelx and kigyo_y == etely:
+    if kigyo_x == piros_etelx and kigyo_y == piros_etely:
         hossz += 1
-        etelx = random.randint(0, racs_szelesseg - 1) * kigyo_meret
-        etely = random.randint(0, racs_magassag - 1) * kigyo_meret
+        pontszam += 1
+        piros_etelx = random.randint(0, racs_szelesseg - 1) * kigyo_meret
+        piros_etely = random.randint(0, racs_magassag - 1) * kigyo_meret
+
+    if sarga_aktiv:
+        if kigyo_x == sarga_etel_x and kigyo_y == sarga_etel_y:
+            hossz += 3
+            pontszam += 3
+            sarga_aktiv = False
+    else:
+        if random.random() < 0.01:
+            sarga_etel_x = random.randint(0, racs_szelesseg - 1) * kigyo_meret
+            sarga_etel_y = random.randint(0, racs_magassag - 1) * kigyo_meret
+            sarga_aktiv = True
 
     kepernyo.fill((0, 0, 0))
 
     for x, y in kigyo_test:
         pygame.draw.rect(kepernyo, zold, (x, y, kigyo_meret, kigyo_meret))
 
-    pygame.draw.rect(kepernyo, piros, (etelx, etely, kigyo_meret, kigyo_meret))
+    pygame.draw.rect(kepernyo, piros, (piros_etelx, piros_etely, kigyo_meret, kigyo_meret))
 
-    pontszoveg = betutipus.render(f"Pont: {hossz - 1}", True, (255, 255, 255))
+    if sarga_aktiv:
+        pygame.draw.rect(kepernyo, sarga, (sarga_etel_x, sarga_etel_y, kigyo_meret, kigyo_meret))
+
+    pontszoveg = betutipus.render(f"Pont: {pontszam}", True, (255, 255, 255))
     kepernyo.blit(pontszoveg, (10, 10))
 
     pygame.display.flip()
