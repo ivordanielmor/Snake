@@ -1,5 +1,4 @@
-# 1. Étel generálása a rácsra - 
-# Generálj minden körben véletlenszerű (x, y) pozíciót, ha nincs aktív "food", és rajzolj egy piros négyzetet oda.
+# 2. Evés detektálása, kígyó növelése - Ha a kígyó feje rákerül az ételre, növeld a pontszámot és hosszabítsd a kígyót.
 
 import pygame
 import random
@@ -9,15 +8,14 @@ pygame.init()
 szelesseg = 1920
 magassag = 1080
 
-kepernyo = pygame.display.set_mode((1920, 1080))
-
+kepernyo = pygame.display.set_mode((szelesseg, magassag))
 ora = pygame.time.Clock()
 
 kigyo_meret = 20
-kigyo_x = (1920 - kigyo_meret) // 2
-kigyo_y = (1080 - kigyo_meret) // 2
 
-# Mozgásirány változók (sebesség pixelben)
+kigyo_x = (szelesseg // 2) // kigyo_meret * kigyo_meret
+kigyo_y = (magassag // 2) // kigyo_meret * kigyo_meret
+
 racs_szelesseg = szelesseg // kigyo_meret
 racs_magassag = magassag // kigyo_meret
 
@@ -30,36 +28,50 @@ sebesseg_y = 0
 zold = (0, 255, 0)
 piros = (200, 40, 40)
 
+kigyo_test = []
+hossz = 1
+
 fut = True
 
-# Játék fő ciklusa
 while fut:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             fut = False
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_LEFT:
+            if event.key == pygame.K_LEFT and sebesseg_x == 0:
                 sebesseg_x = -20
                 sebesseg_y = 0
-            if event.key == pygame.K_RIGHT:
+            if event.key == pygame.K_RIGHT and sebesseg_x == 0:
                 sebesseg_x = 20
                 sebesseg_y = 0
-            if event.key == pygame.K_UP:
+            if event.key == pygame.K_UP and sebesseg_y == 0:
                 sebesseg_x = 0
                 sebesseg_y = -20
-            if event.key == pygame.K_DOWN:
+            if event.key == pygame.K_DOWN and sebesseg_y == 0:
                 sebesseg_x = 0
                 sebesseg_y = 20
 
     kigyo_x += sebesseg_x
     kigyo_y += sebesseg_y
 
-    # Képernyő törlés
+    kigyo_test.append((kigyo_x, kigyo_y))
+
+    if len(kigyo_test) > hossz:
+        del kigyo_test[0]
+
+    if kigyo_x == etelx and kigyo_y == etely:
+        hossz += 1
+        etelx = random.randint(0, racs_szelesseg - 1) * kigyo_meret
+        etely = random.randint(0, racs_magassag - 1) * kigyo_meret
+
     kepernyo.fill((0, 0, 0))
 
-    pygame.draw.rect(kepernyo, zold, (kigyo_x, kigyo_y, kigyo_meret, kigyo_meret))
-    pygame.draw.rect(kepernyo, piros, (etelx, etely, 20, 20))
+    for x, y in kigyo_test:
+        pygame.draw.rect(kepernyo, zold, (x, y, kigyo_meret, kigyo_meret))
+
+    pygame.draw.rect(kepernyo, piros, (etelx, etely, kigyo_meret, kigyo_meret))
+
     pygame.display.flip()
     ora.tick(10)
 
-pygame.quit() 
+pygame.quit()
