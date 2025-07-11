@@ -1,4 +1,4 @@
-# 1. Falütközés detektálása - Állítsd le a játékot és jelenítsd meg "Game Over!", ha a kígyó feje kimegy a pályáról.
+# 2. Testütközés detektálása - Ha a kígyó feje beleütközik a testébe, szintén állítsd le a játékot és írd ki a "Game Over"-t.
 
 import pygame
 import random
@@ -72,6 +72,9 @@ while fut:
         kigyo_test.append((kigyo_x, kigyo_y))
         if len(kigyo_test) > hossz:
             del kigyo_test[0]
+        
+        if (kigyo_x, kigyo_y) in kigyo_test[:-1]:
+            game_over = True
 
     if kigyo_x == piros_etelx and kigyo_y == piros_etely:
         hossz += 1
