@@ -1,4 +1,4 @@
-# 4. Újraindítás kezelése - Az "R" billentyű lenyomására indítsd újra a játékot.
+# HÁZI FELADAT: Készíts egy eredményjelzőt
 
 import pygame
 import random
@@ -31,6 +31,8 @@ zold = (0, 255, 0)
 piros = (200, 40, 40)
 sarga = (255, 255, 0)
 
+betutipus = pygame.font.SysFont(None, 40)
+
 sarga_etel_x = -kigyo_meret
 sarga_etel_y = -kigyo_meret
 sarga_aktiv = False
@@ -41,6 +43,17 @@ hossz = 1
 pontszam = 0
 
 betutipus = pygame.font.SysFont(None, 40)
+
+# Highscore betöltése (csak olvasás)
+try:
+    with open("highscore.txt", "r") as file:
+        sor = file.read().strip()
+        if ":" in sor:
+            highscore = int(sor.split(":")[1].strip())
+        else:
+            highscore = int(sor)
+except (FileNotFoundError, ValueError):
+    highscore = 0
 
 fut = True
 
@@ -76,9 +89,6 @@ while fut:
     if not game_over:
         kigyo_x += sebesseg_x
         kigyo_y += sebesseg_y
-
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_r.lower():
 
         if kigyo_x < 0 or kigyo_x >= szelesseg or kigyo_y < 0 or kigyo_y >= magassag:
             game_over = True
@@ -119,6 +129,9 @@ while fut:
 
     pontszoveg = betutipus.render(f"Pont: {pontszam}", True, (255, 255, 255))
     kepernyo.blit(pontszoveg, (10, 10))
+
+    highscore_szoveg = betutipus.render(f"Highscore: {highscore}", True, (255, 255, 255))
+    kepernyo.blit(highscore_szoveg, (10, 50))
 
     if game_over:
         game_over_szoveg = betutipus.render("Game Over!", True, (255, 0, 0))
