@@ -1,4 +1,4 @@
-# 2. Testütközés detektálása - Ha a kígyó feje beleütközik a testébe, szintén állítsd le a játékot és írd ki a "Game Over"-t.
+# 3. Game Over üzenet kiírása és szünet - A játéktér közepén jelenítsd meg a feliratot, majd várj 1,5 mp-t.
 
 import pygame
 import random
@@ -108,6 +108,7 @@ while fut:
 
     if game_over:
         game_over_szoveg = betutipus.render("Game Over!", True, (255, 0, 0))
+        pygame.time.delay(1500)
         kepernyo.blit(game_over_szoveg, (szelesseg // 2 - 100, magassag // 2))
 
     pygame.display.flip()
