@@ -1,4 +1,4 @@
-# HÁZI FELADAT: Tegyél be különböző színű "nagyobb ételdarabokat" (pl. sárga blokk), amelyek +3 pontot érnek és ritkábban jelennek meg.
+# 1. Falütközés detektálása - Állítsd le a játékot és jelenítsd meg "Game Over!", ha a kígyó feje kimegy a pályáról.
 
 import pygame
 import random
@@ -7,6 +7,8 @@ pygame.init()
 
 szelesseg = 1920
 magassag = 1080
+
+game_over = False
 
 kepernyo = pygame.display.set_mode((szelesseg, magassag))
 ora = pygame.time.Clock()
@@ -60,12 +62,16 @@ while fut:
                 sebesseg_x = 0
                 sebesseg_y = 20
 
-    kigyo_x += sebesseg_x
-    kigyo_y += sebesseg_y
+    if not game_over:
+        kigyo_x += sebesseg_x
+        kigyo_y += sebesseg_y
 
-    kigyo_test.append((kigyo_x, kigyo_y))
-    if len(kigyo_test) > hossz:
-        del kigyo_test[0]
+        if kigyo_x < 0 or kigyo_x >= szelesseg or kigyo_y < 0 or kigyo_y >= magassag:
+            game_over = True
+
+        kigyo_test.append((kigyo_x, kigyo_y))
+        if len(kigyo_test) > hossz:
+            del kigyo_test[0]
 
     if kigyo_x == piros_etelx and kigyo_y == piros_etely:
         hossz += 1
@@ -96,6 +102,10 @@ while fut:
 
     pontszoveg = betutipus.render(f"Pont: {pontszam}", True, (255, 255, 255))
     kepernyo.blit(pontszoveg, (10, 10))
+
+    if game_over:
+        game_over_szoveg = betutipus.render("Game Over!", True, (255, 0, 0))
+        kepernyo.blit(game_over_szoveg, (szelesseg // 2 - 100, magassag // 2))
 
     pygame.display.flip()
     ora.tick(10)
