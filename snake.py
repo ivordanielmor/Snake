@@ -1,4 +1,4 @@
-# 3. Game Over üzenet kiírása és szünet - A játéktér közepén jelenítsd meg a feliratot, majd várj 1,5 mp-t.
+# 4. Újraindítás kezelése - Az "R" billentyű lenyomására indítsd újra a játékot.
 
 import pygame
 import random
@@ -61,10 +61,24 @@ while fut:
             if event.key == pygame.K_DOWN and sebesseg_y == 0:
                 sebesseg_x = 0
                 sebesseg_y = 20
+            if event.key == pygame.K_r:
+                 if game_over:
+                # Visszaállítás alapértékekre:
+                    kigyo_x = (szelesseg // 2) // kigyo_meret * kigyo_meret
+                    kigyo_y = (magassag // 2) // kigyo_meret * kigyo_meret
+                    sebesseg_x = 20
+                    sebesseg_y = 0
+                    kigyo_test = []
+                    hossz = 1
+                    pontszam = 0
+                    game_over = False
 
     if not game_over:
         kigyo_x += sebesseg_x
         kigyo_y += sebesseg_y
+
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_r.lower():
 
         if kigyo_x < 0 or kigyo_x >= szelesseg or kigyo_y < 0 or kigyo_y >= magassag:
             game_over = True
