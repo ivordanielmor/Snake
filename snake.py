@@ -1,4 +1,4 @@
-# HÁZI FELADAT: Készíts egy eredményjelzőt
+# 1. A kígyó testének mentése fájlba - Írd ki minden pozícióját egy sorba, pontosvesszővel elválasztva.
 
 import pygame
 import random
@@ -44,7 +44,6 @@ pontszam = 0
 
 betutipus = pygame.font.SysFont(None, 40)
 
-# Highscore betöltése (csak olvasás)
 try:
     with open("highscore.txt", "r") as file:
         sor = file.read().strip()
@@ -76,7 +75,7 @@ while fut:
                 sebesseg_y = 20
             if event.key == pygame.K_r:
                  if game_over:
-                # Visszaállítás alapértékekre:
+
                     kigyo_x = (szelesseg // 2) // kigyo_meret * kigyo_meret
                     kigyo_y = (magassag // 2) // kigyo_meret * kigyo_meret
                     sebesseg_x = 20
@@ -96,6 +95,11 @@ while fut:
         kigyo_test.append((kigyo_x, kigyo_y))
         if len(kigyo_test) > hossz:
             del kigyo_test[0]
+
+         # kígyó pozícióinak fájlba írása:
+        with open("kigyopozi.txt", "w") as f:
+            pozisor = ";".join([f"{x},{y}" for x, y in kigyo_test])
+            f.write(pozisor)
         
         if (kigyo_x, kigyo_y) in kigyo_test[:-1]:
             game_over = True
