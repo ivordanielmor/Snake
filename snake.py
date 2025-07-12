@@ -1,4 +1,4 @@
-# 1. A kígyó testének mentése fájlba - Írd ki minden pozícióját egy sorba, pontosvesszővel elválasztva.
+# 2. Állapot betöltése - Olvasd vissza a fájlt, és generáld le újra a kígyót testét.
 
 import pygame
 import random
@@ -43,7 +43,7 @@ hossz = 1
 pontszam = 0
 
 betutipus = pygame.font.SysFont(None, 40)
-
+# # Highscore beolvasása
 try:
     with open("highscore.txt", "r") as file:
         sor = file.read().strip()
@@ -54,7 +54,33 @@ try:
 except (FileNotFoundError, ValueError):
     highscore = 0
 
+# Kígyó pozíciók betöltése
+kigyo_test = []
+try:
+    with open("kigyopozi.txt", "r") as f:
+        adat = f.read().strip()
+        if adat != "":
+            poziciok = adat.split(":")
+            for poz in poziciok:
+                x_str, y_str = poz.split(",")
+                kigyo_test.append((int(x_str), int(y_str)))
+            kigyo_x, kigyo_y = kigyo_test[-1]
+            hossz = len(kigyo_test)
+        else:
+            kigyo_x = (szelesseg // 2) // kigyo_meret * kigyo_meret
+            kigyo_y = (magassag // 2) // kigyo_meret * kigyo_meret
+            hossz = 1
+except FileNotFoundError:
+    kigyo_x = (szelesseg // 2) // kigyo_meret * kigyo_meret
+    kigyo_y = (magassag // 2) // kigyo_meret * kigyo_meret
+    hossz = 1
+    kigyo_test = []
+
+if not kigyo_test:
+    kigyo_test = [(kigyo_x, kigyo_y)]
+
 fut = True
+game_over = False
 
 while fut:
     for event in pygame.event.get():
@@ -138,9 +164,18 @@ while fut:
     kepernyo.blit(highscore_szoveg, (10, 50))
 
     if game_over:
+        if pontszam > highscore:
+            highscore = pontszam
+            with open("highscore.txt", "w") as file:
+                file.write(f"Highscore: {highscore}")
+        with open("kigyopozi.txt", "w") as f:
+            pozisor = ":".join([f"{x},{y}" for x, y in kigyo_test])
+            f.write(pozisor)
         game_over_szoveg = betutipus.render("Game Over!", True, (255, 0, 0))
-        pygame.time.delay(1500)
+        
         kepernyo.blit(game_over_szoveg, (szelesseg // 2 - 100, magassag // 2))
+        pygame.display.flip()
+        pygame.time.delay(1500)
 
     pygame.display.flip()
     ora.tick(10)
