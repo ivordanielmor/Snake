@@ -1,23 +1,18 @@
-# 2. Állapot betöltése - Olvasd vissza a fájlt, és generáld le újra a kígyót testét.
+# 3. HIbakezelés - Figyeld, hogy a fájl létezik-e (különben dobj hibát)!
 
 import pygame
 import random
+import os
 
 pygame.init()
 
 szelesseg = 1920
 magassag = 1080
 
-game_over = False
-
 kepernyo = pygame.display.set_mode((szelesseg, magassag))
 ora = pygame.time.Clock()
 
 kigyo_meret = 20
-
-kigyo_x = (szelesseg // 2) // kigyo_meret * kigyo_meret
-kigyo_y = (magassag // 2) // kigyo_meret * kigyo_meret
-
 racs_szelesseg = szelesseg // kigyo_meret
 racs_magassag = magassag // kigyo_meret
 
@@ -37,13 +32,8 @@ sarga_etel_x = -kigyo_meret
 sarga_etel_y = -kigyo_meret
 sarga_aktiv = False
 
-kigyo_test = []
-hossz = 1
-
 pontszam = 0
 
-betutipus = pygame.font.SysFont(None, 40)
-# # Highscore beolvasása
 try:
     with open("highscore.txt", "r") as file:
         sor = file.read().strip()
@@ -56,25 +46,27 @@ except (FileNotFoundError, ValueError):
 
 # Kígyó pozíciók betöltése
 kigyo_test = []
-try:
-    with open("kigyopozi.txt", "r") as f:
-        adat = f.read().strip()
-        if adat != "":
-            poziciok = adat.split(":")
-            for poz in poziciok:
-                x_str, y_str = poz.split(",")
-                kigyo_test.append((int(x_str), int(y_str)))
-            kigyo_x, kigyo_y = kigyo_test[-1]
-            hossz = len(kigyo_test)
-        else:
-            kigyo_x = (szelesseg // 2) // kigyo_meret * kigyo_meret
-            kigyo_y = (magassag // 2) // kigyo_meret * kigyo_meret
-            hossz = 1
-except FileNotFoundError:
-    kigyo_x = (szelesseg // 2) // kigyo_meret * kigyo_meret
-    kigyo_y = (magassag // 2) // kigyo_meret * kigyo_meret
-    hossz = 1
-    kigyo_test = []
+
+if os.path.exists("kigyopozi.txt"):
+    try:
+        with open("kigyopozi.txt", "r") as f:
+            adat = f.read().strip()
+            if adat != "":
+                poziciok = adat.split(":")
+                for poz in poziciok:
+                    x_str, y_str = poz.split(",")
+                    kigyo_test.append((int(x_str), int(y_str)))
+                kigyo_x, kigyo_y = kigyo_test[-1]
+                hossz = len(kigyo_test)
+            else:
+                kigyo_x = (szelesseg // 2) // kigyo_meret * kigyo_meret
+                kigyo_y = (magassag // 2) // kigyo_meret * kigyo_meret
+                hossz = 1
+    except Exception as e:
+        raise RuntimeError(f"Hiba a kigyopozi.txt beolvasásakor: {e}")
+else:
+    # Ha nincs fájl, itt dobod a hibát, ha a feladat úgy kéri:
+    raise FileNotFoundError("A 'kigyopozi.txt' fájl nem található!")
 
 if not kigyo_test:
     kigyo_test = [(kigyo_x, kigyo_y)]
@@ -100,13 +92,12 @@ while fut:
                 sebesseg_x = 0
                 sebesseg_y = 20
             if event.key == pygame.K_r:
-                 if game_over:
-
+                if game_over:
                     kigyo_x = (szelesseg // 2) // kigyo_meret * kigyo_meret
                     kigyo_y = (magassag // 2) // kigyo_meret * kigyo_meret
                     sebesseg_x = 20
                     sebesseg_y = 0
-                    kigyo_test = []
+                    kigyo_test = [(kigyo_x, kigyo_y)]
                     hossz = 1
                     pontszam = 0
                     game_over = False
@@ -122,11 +113,6 @@ while fut:
         if len(kigyo_test) > hossz:
             del kigyo_test[0]
 
-         # kígyó pozícióinak fájlba írása:
-        with open("kigyopozi.txt", "w") as f:
-            pozisor = ";".join([f"{x},{y}" for x, y in kigyo_test])
-            f.write(pozisor)
-        
         if (kigyo_x, kigyo_y) in kigyo_test[:-1]:
             game_over = True
 
@@ -172,7 +158,6 @@ while fut:
             pozisor = ":".join([f"{x},{y}" for x, y in kigyo_test])
             f.write(pozisor)
         game_over_szoveg = betutipus.render("Game Over!", True, (255, 0, 0))
-        
         kepernyo.blit(game_over_szoveg, (szelesseg // 2 - 100, magassag // 2))
         pygame.display.flip()
         pygame.time.delay(1500)
