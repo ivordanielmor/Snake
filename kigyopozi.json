@@ -1,0 +1,20 @@
+{
+    "snake_positions": [
+        [
+            1920,
+            540
+        ]
+    ],
+    "direction": "right",
+    "score": 0,
+    "red_food": [
+        1060,
+        580
+    ],
+    "yellow_food": [
+        -20,
+        -20
+    ],
+    "yellow_active": false,
+    "length": 1
+}
