@@ -1,4 +1,4 @@
- #2. Visszatöltés és séma-ellenőrzés - OLvasd vissza a JSON-t, töltsd be a változókat.
+# 3. Hibakezelés, alapértelmezett értékek, sémavédelem - Ha valami hiányzik, adj alapértelmezést!
 
 import pygame
 import random
@@ -33,18 +33,57 @@ sarga_etel_y = -kigyo_meret
 sarga_aktiv = False
 
 # Betöltés JSON-ból
-if os.path.exists("kigyopozi.json"):
-    with open("kigyopozi.json", "r") as json_file:
+if os.path.exists("savegame.json"):
+    with open("savegame.json", "r") as json_file:
         adatok = json.load(json_file)
-        kigyo_test = [tuple(pos) for pos in adatok.get("snake_positions", [])]
-        irany = adatok.get("direction", "right")
-        pontszam = adatok.get("score", 0)
-        highscore = adatok.get("highscore", 0)
-        piros_etelx, piros_etely = adatok.get("red_food", [100, 100])
-        sarga_etel_x, sarga_etel_y = adatok.get("yellow_food", [-kigyo_meret, -kigyo_meret])
-        sarga_aktiv = adatok.get("yellow_active", False)
-        hossz = adatok.get("length", 1)
+        # Snake positions
+        snake_positions_raw = adatok.get("snake_positions", [])
+        if isinstance(snake_positions_raw, list) and all(isinstance(pos, (list, tuple)) and len(pos) == 2 for pos in snake_positions_raw):
+            kigyo_test = [tuple(pos) for pos in snake_positions_raw]
+        else:
+            # Alapértelmezett kezdőpozíció
+            kigyo_x = (szelesseg // 2) // kigyo_meret * kigyo_meret
+            kigyo_y = (magassag // 2) // kigyo_meret * kigyo_meret
+            kigyo_test = [(kigyo_x, kigyo_y)]
 
+        # Direction
+        irany = adatok.get("direction", "right")
+        if irany not in ("left", "right", "up", "down"):
+            irany = "right"
+
+        # Score
+        pontszam = adatok.get("score", 0)
+        if not isinstance(pontszam, int):
+            pontszam = 0
+
+        # Highscore
+        highscore = adatok.get("highscore", 0)
+        if not isinstance(highscore, int):
+            highscore = 0
+
+        # Red food position
+        red_food = adatok.get("red_food", [100, 100])
+        if (not isinstance(red_food, list) or len(red_food) != 2 or
+            not all(isinstance(c, int) for c in red_food)):
+            red_food = [100, 100]
+        piros_etelx, piros_etely = red_food
+
+        # Yellow food position
+        yellow_food = adatok.get("yellow_food", [-kigyo_meret, -kigyo_meret])
+        if (not isinstance(yellow_food, list) or len(yellow_food) != 2 or
+            not all(isinstance(c, int) for c in yellow_food)):
+            yellow_food = [-kigyo_meret, -kigyo_meret]
+        sarga_etel_x, sarga_etel_y = yellow_food
+
+        # Yellow active flag
+        sarga_aktiv = adatok.get("yellow_active", False)
+        if not isinstance(sarga_aktiv, bool):
+            sarga_aktiv = False
+
+        # Length
+        hossz = adatok.get("length", 1)
+        if not isinstance(hossz, int) or hossz < 1:
+            hossz = 1
         if irany == "left":
             sebesseg_x = -kigyo_meret
             sebesseg_y = 0
@@ -180,7 +219,7 @@ while fut:
             "yellow_active": sarga_aktiv,
             "length": hossz,
         }
-        with open("kigyopozi.json", "w") as json_file:
+        with open("savegame.json", "w") as json_file:
             json.dump(adatok, json_file, indent=4)
 
 pygame.quit()
