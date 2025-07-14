@@ -1,25 +1,38 @@
 {
     "snake_positions": [
         [
-            1040,
-            1040
+            80,
+            520
         ],
         [
-            1040,
-            1060
+            60,
+            520
+        ],
+        [
+            40,
+            520
+        ],
+        [
+            20,
+            520
+        ],
+        [
+            0,
+            520
         ]
     ],
-    "direction": "down",
-    "score": 1,
-    "highscore": 1,
+    "direction": "left",
+    "score": 4,
+    "highscore": 8,
     "red_food": [
-        1240,
-        580
+        300,
+        980
     ],
     "yellow_food": [
-        1460,
-        280
+        1620,
+        940
     ],
     "yellow_active": true,
-    "length": 2
+    "length": 5,
+    "lives": 1
 }
