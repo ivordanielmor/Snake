@@ -1,38 +1,35 @@
 {
     "snake_positions": [
         [
-            80,
-            520
-        ],
-        [
-            60,
-            520
-        ],
-        [
             40,
-            520
+            780
         ],
         [
             20,
-            520
+            780
         ],
         [
             0,
-            520
+            780
         ]
     ],
     "direction": "left",
-    "score": 4,
+    "score": 2,
     "highscore": 8,
     "red_food": [
-        300,
-        980
+        40,
+        920
     ],
     "yellow_food": [
         1620,
         940
     ],
     "yellow_active": true,
-    "length": 5,
-    "lives": 1
+    "length": 3,
+    "lives": 1,
+    "tournament": {
+        "name": "Default Tournament",
+        "round": 1,
+        "players": []
+    }
 }
