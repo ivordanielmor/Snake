@@ -1,3 +1,5 @@
+ #2. Visszatöltés és séma-ellenőrzés - OLvasd vissza a JSON-t, töltsd be a változókat.
+
 import pygame
 import random
 import os
@@ -16,97 +18,63 @@ kigyo_meret = 20
 racs_szelesseg = szelesseg // kigyo_meret
 racs_magassag = magassag // kigyo_meret
 
-piros_etelx = random.randint(0, racs_szelesseg - 1) * kigyo_meret
-piros_etely = random.randint(0, racs_magassag - 1) * kigyo_meret
-
-sebesseg_x = kigyo_meret
-sebesseg_y = 0
-
 zold = (0, 255, 0)
 piros = (200, 40, 40)
 sarga = (255, 255, 0)
 
 betutipus = pygame.font.SysFont(None, 40)
 
+# Alapértékek
+pontszam = 0
+highscore = 0
+hossz = 1
 sarga_etel_x = -kigyo_meret
 sarga_etel_y = -kigyo_meret
 sarga_aktiv = False
 
-pontszam = 0
+# Betöltés JSON-ból
+if os.path.exists("kigyopozi.json"):
+    with open("kigyopozi.json", "r") as json_file:
+        adatok = json.load(json_file)
+        kigyo_test = [tuple(pos) for pos in adatok.get("snake_positions", [])]
+        irany = adatok.get("direction", "right")
+        pontszam = adatok.get("score", 0)
+        highscore = adatok.get("highscore", 0)
+        piros_etelx, piros_etely = adatok.get("red_food", [100, 100])
+        sarga_etel_x, sarga_etel_y = adatok.get("yellow_food", [-kigyo_meret, -kigyo_meret])
+        sarga_aktiv = adatok.get("yellow_active", False)
+        hossz = adatok.get("length", 1)
 
-try:
-    with open("highscore.txt", "r") as file:
-        sor = file.read().strip()
-        if ":" in sor:
-            highscore = int(sor.split(":")[1].strip())
+        if irany == "left":
+            sebesseg_x = -kigyo_meret
+            sebesseg_y = 0
+        elif irany == "right":
+            sebesseg_x = kigyo_meret
+            sebesseg_y = 0
+        elif irany == "up":
+            sebesseg_x = 0
+            sebesseg_y = -kigyo_meret
+        elif irany == "down":
+            sebesseg_x = 0
+            sebesseg_y = kigyo_meret
         else:
-            highscore = int(sor)
-except (FileNotFoundError, ValueError):
-    highscore = 0
+            sebesseg_x = kigyo_meret
+            sebesseg_y = 0
 
-# Kígyó pozíciók és irány betöltése
-if os.path.exists("kigyopozi.txt"):
-    kigyo_test = []
-    try:
-        with open("kigyopozi.txt", "r") as f:
-            sorok = f.read().strip().split("\n")
-            if len(sorok) >= 2:
-                poziciok = sorok[0].split(":")
-                for poz in poziciok:
-                    x_str, y_str = poz.split(",")
-                    kigyo_test.append((int(x_str), int(y_str)))
-                irany = sorok[1]
-
-                kigyo_x, kigyo_y = kigyo_test[-1]
-                hossz = len(kigyo_test)
-
-                # Irány alapján sebesség beállítása
-                if irany == "left":
-                    sebesseg_x = -kigyo_meret
-                    sebesseg_y = 0
-                elif irany == "right":
-                    sebesseg_x = kigyo_meret
-                    sebesseg_y = 0
-                elif irany == "up":
-                    sebesseg_x = 0
-                    sebesseg_y = -kigyo_meret
-                elif irany == "down":
-                    sebesseg_x = 0
-                    sebesseg_y = kigyo_meret
-                else:
-                    sebesseg_x = kigyo_meret
-                    sebesseg_y = 0  # alapértelmezett
-            else:
-                adat = sorok[0]
-                if adat != "":
-                    poziciok = adat.split(":")
-                    for poz in poziciok:
-                        x_str, y_str = poz.split(",")
-                        kigyo_test.append((int(x_str), int(y_str)))
-                    kigyo_x, kigyo_y = kigyo_test[-1]
-                    hossz = len(kigyo_test)
-                    sebesseg_x = kigyo_meret
-                    sebesseg_y = 0
-                else:
-                    kigyo_x = (szelesseg // 2) // kigyo_meret * kigyo_meret
-                    kigyo_y = (magassag // 2) // kigyo_meret * kigyo_meret
-                    hossz = 1
-                    sebesseg_x = 20
-                    sebesseg_y = 0
-    except Exception:
-        kigyo_x = (szelesseg // 2) // kigyo_meret * kigyo_meret
-        kigyo_y = (magassag // 2) // kigyo_meret * kigyo_meret
-        hossz = 1
-        kigyo_test = []
-        sebesseg_x = 20
-        sebesseg_y = 0
+        if kigyo_test:
+            kigyo_x, kigyo_y = kigyo_test[-1]
+        else:
+            kigyo_x = (szelesseg // 2) // kigyo_meret * kigyo_meret
+            kigyo_y = (magassag // 2) // kigyo_meret * kigyo_meret
+            kigyo_test = [(kigyo_x, kigyo_y)]
 else:
     kigyo_x = (szelesseg // 2) // kigyo_meret * kigyo_meret
     kigyo_y = (magassag // 2) // kigyo_meret * kigyo_meret
-    hossz = 1
-    kigyo_test = []
-    sebesseg_x = 20
+    piros_etelx = random.randint(0, racs_szelesseg - 1) * kigyo_meret
+    piros_etely = random.randint(0, racs_magassag - 1) * kigyo_meret
+    sebesseg_x = kigyo_meret
     sebesseg_y = 0
+    kigyo_test = [(kigyo_x, kigyo_y)]
 
 fut = True
 game_over = False
@@ -114,38 +82,7 @@ game_over = False
 while fut:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            if not game_over:
-                adatok = {
-                    "snake_positions": [list(pos) for pos in kigyo_test],
-                    "direction": "left" if sebesseg_x == -kigyo_meret else
-                                "right" if sebesseg_x == kigyo_meret else
-                                "up" if sebesseg_y == -kigyo_meret else
-                                "down" if sebesseg_y == kigyo_meret else
-                                "right",
-                    "score": pontszam,
-                    "red_food": [piros_etelx, piros_etely],
-                    "yellow_food": [sarga_etel_x, sarga_etel_y],
-                    "yellow_active": sarga_aktiv,
-                    "length": hossz,
-                }
-                with open("kigyopozi.json", "w") as json_file:
-                    json.dump(adatok, json_file, indent=4)
-
-                with open("kigyopozi.txt", "w") as f:
-                    pozisor = ":".join([f"{x},{y}" for x, y in kigyo_test])
-                    if sebesseg_x == -kigyo_meret:
-                        irany = "left"
-                    elif sebesseg_x == kigyo_meret:
-                        irany = "right"
-                    elif sebesseg_y == -kigyo_meret:
-                        irany = "up"
-                    elif sebesseg_y == kigyo_meret:
-                        irany = "down"
-                    else:
-                        irany = "right"
-                    f.write(pozisor + "\n" + irany)
             fut = False
-
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT and sebesseg_x == 0:
                 sebesseg_x = -kigyo_meret
@@ -159,16 +96,15 @@ while fut:
             elif event.key == pygame.K_DOWN and sebesseg_y == 0:
                 sebesseg_x = 0
                 sebesseg_y = kigyo_meret
-            elif event.key == pygame.K_r:
-                if game_over:
-                    kigyo_x = (szelesseg // 2) // kigyo_meret * kigyo_meret
-                    kigyo_y = (magassag // 2) // kigyo_meret * kigyo_meret
-                    sebesseg_x = kigyo_meret
-                    sebesseg_y = 0
-                    kigyo_test = [(kigyo_x, kigyo_y)]
-                    hossz = 1
-                    pontszam = 0
-                    game_over = False
+            elif event.key == pygame.K_r and game_over:
+                kigyo_x = (szelesseg // 2) // kigyo_meret * kigyo_meret
+                kigyo_y = (magassag // 2) // kigyo_meret * kigyo_meret
+                sebesseg_x = kigyo_meret
+                sebesseg_y = 0
+                kigyo_test = [(kigyo_x, kigyo_y)]
+                hossz = 1
+                pontszam = 0
+                game_over = False
 
     if not game_over:
         kigyo_x += sebesseg_x
@@ -187,6 +123,8 @@ while fut:
         if kigyo_x == piros_etelx and kigyo_y == piros_etely:
             hossz += 1
             pontszam += 1
+            if pontszam > highscore:
+                highscore = pontszam
             piros_etelx = random.randint(0, racs_szelesseg - 1) * kigyo_meret
             piros_etely = random.randint(0, racs_magassag - 1) * kigyo_meret
 
@@ -218,11 +156,16 @@ while fut:
     kepernyo.blit(highscore_szoveg, (10, 50))
 
     if game_over:
-        if pontszam > highscore:
-            highscore = pontszam
-            with open("highscore.txt", "w") as file:
-                file.write(f"Highscore: {highscore}")
+        game_over_szoveg = betutipus.render("Game Over!", True, (255, 0, 0))
+        kepernyo.blit(game_over_szoveg, (szelesseg // 2 - 100, magassag // 2))
+        pygame.display.flip()
+        pygame.time.delay(1500)
 
+    pygame.display.flip()
+    ora.tick(10)
+
+    # Minden ciklus végén mentés JSON-be
+    if not game_over:
         adatok = {
             "snake_positions": [list(pos) for pos in kigyo_test],
             "direction": "left" if sebesseg_x == -kigyo_meret else
@@ -231,35 +174,13 @@ while fut:
                         "down" if sebesseg_y == kigyo_meret else
                         "right",
             "score": pontszam,
+            "highscore": highscore,
             "red_food": [piros_etelx, piros_etely],
             "yellow_food": [sarga_etel_x, sarga_etel_y],
             "yellow_active": sarga_aktiv,
             "length": hossz,
         }
-
         with open("kigyopozi.json", "w") as json_file:
             json.dump(adatok, json_file, indent=4)
-
-        with open("kigyopozi.txt", "w") as f:
-            pozisor = ":".join([f"{x},{y}" for x, y in kigyo_test])
-            if sebesseg_x == -kigyo_meret:
-                irany = "left"
-            elif sebesseg_x == kigyo_meret:
-                irany = "right"
-            elif sebesseg_y == -kigyo_meret:
-                irany = "up"
-            elif sebesseg_y == kigyo_meret:
-                irany = "down"
-            else:
-                irany = "right"
-            f.write(pozisor + "\n" + irany)
-
-        game_over_szoveg = betutipus.render("Game Over!", True, (255, 0, 0))
-        kepernyo.blit(game_over_szoveg, (szelesseg // 2 - 100, magassag // 2))
-        pygame.display.flip()
-        pygame.time.delay(1500)
-
-    pygame.display.flip()
-    ora.tick(10)
 
 pygame.quit()
