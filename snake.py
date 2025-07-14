@@ -1,4 +1,4 @@
-# Tournament - adatstruktúra létrehozása, mentése JSON-be
+# 2. Új mérkőzés rögzítése
 import pygame
 import random
 import os
@@ -34,9 +34,35 @@ sarga_aktiv = False
 # Tournament alapértelmezett érték
 tournament = {
     "name": "Default Tournament",
-    "round": 1,
-    "players": []
+        "results" : [
+            {"player": "Alice", "wins": 0},
+            {"player": "Bob",   "wins": 0}
+        ]
 }
+
+def add_result(filename, player_name):
+    try:
+        with open(filename, "r") as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        data = {"tournament": {"results": []}}
+
+    if "tournament" not in data:
+        data["tournament"] = {"results": []}
+    if "results" not in data["tournament"]:
+        data["tournament"]["results"] = []
+
+    results = data["tournament"]["results"]
+
+    for player in results:
+        if player["player"] == player_name:
+            player["wins"] += 1
+            break
+    else:
+        results.append({"player": player_name, "wins": 1})
+
+    with open(filename, "w") as f:
+        json.dump(data, f, indent=4)
 
 def alaphelyzet():
     return (szelesseg // 2) // kigyo_meret * kigyo_meret, (magassag // 2) // kigyo_meret * kigyo_meret
@@ -93,6 +119,7 @@ else:
 
 fut = True
 game_over = False
+game_over_handled = False 
 
 while fut:
     for event in pygame.event.get():
@@ -115,6 +142,7 @@ while fut:
                 pontszam = 0
                 lives = 3
                 game_over = False
+                game_over_handled = False
 
     if not game_over:
         kigyo_x += sebesseg_x
@@ -162,6 +190,10 @@ while fut:
     kepernyo.blit(betutipus.render(f"Lives: {lives}", True, (255, 255, 255)), (10, 90))
 
     if game_over:
+        if not game_over_handled:
+            add_result("savegame.json", "Alice")  # csak egyszer hívjuk meg
+            game_over_handled = True
+
         kepernyo.blit(betutipus.render("Game Over!", True, (255, 0, 0)), (szelesseg // 2 - 100, magassag // 2))
         pygame.display.flip()
         pygame.time.delay(1500)
