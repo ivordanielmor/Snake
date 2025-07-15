@@ -1,5 +1,5 @@
-# 3. Győztes kiválasztása
-# A legtöbb győzelem alapján kiválasztja a győztest
+# 4. Ranglista megjenitése
+# Rendezés győzelmek szerint, csökkenő sorrendben
 import pygame
 import random
 import os
@@ -64,6 +64,18 @@ def gyoztes_kivalasztasa(tournament_data):
 
 def alaphelyzet():
     return (szelesseg // 2) // kigyo_meret * kigyo_meret, (magassag // 2) // kigyo_meret * kigyo_meret
+
+def draw_ranglista(surface, tournament_data, font, x, y):
+    results = tournament_data.get("results", [])
+    # Csökkenő sorrendbe rendezés győzelmek alapján
+    sorted_results = sorted(results, key=lambda x: x.get("wins", 0), reverse=True)
+
+    surface.blit(font.render("Ranglista:", True, (255, 255, 255)), (x, y))
+    offset = 40
+    for i, player in enumerate(sorted_results):
+        szoveg = f"{i+1}. {player['player']}: {player['wins']} győzelem"
+        surface.blit(font.render(szoveg, True, (255, 255, 255)), (x, y + offset))
+        offset += 30
 
 # Alapértékek
 lives = 3
@@ -204,6 +216,9 @@ while fut:
     kepernyo.blit(betutipus.render(f"Highscore: {highscore}", True, (255, 255, 255)), (10, 50))
     kepernyo.blit(betutipus.render(f"Lives: {lives}", True, (255, 255, 255)), (10, 90))
 
+    # Ranglista kirajzolása jobb felső sarokban
+    draw_ranglista(kepernyo, tournament, betutipus, szelesseg - 300, 10)
+
     if game_over:
         if not game_over_handled:
             add_result("savegame.json", "Alice")
@@ -238,6 +253,6 @@ while fut:
 
 pygame.quit()
 
-# Győztes kiíratása
+# Győztes kiíratása a terminálban
 nyertes_nev, nyertes_gyozelmek = gyoztes_kivalasztasa(tournament)
 print(f"A győztes: {nyertes_nev} {nyertes_gyozelmek} győzelemmel.")

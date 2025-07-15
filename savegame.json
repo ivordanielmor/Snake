@@ -1,70 +1,66 @@
 {
     "snake_positions": [
         [
-            480,
-            200
-        ],
-        [
-            480,
+            760,
             180
         ],
         [
-            480,
+            760,
             160
         ],
         [
-            480,
+            760,
             140
         ],
         [
-            480,
+            760,
             120
         ],
         [
-            480,
+            760,
             100
         ],
         [
-            480,
+            760,
             80
         ],
         [
-            480,
+            760,
             60
         ],
         [
-            480,
+            760,
             40
         ],
         [
-            480,
+            760,
             20
         ],
         [
-            480,
+            760,
             0
         ]
     ],
     "direction": "up",
-    "score": 10,
+    "score": 9,
     "highscore": 8,
     "red_food": [
         1680,
         520
     ],
     "yellow_food": [
-        840,
-        300
+        760,
+        200
     ],
     "yellow_active": false,
-    "length": 11,
+    "length": 10,
     "lives": 1,
     "tournament": {
         "name": "Default Tournament",
         "results": [
             {
                 "player": "Alice",
-                "wins": 1
+                "wins": 3
             },
             {
                 "player": "Bob",
