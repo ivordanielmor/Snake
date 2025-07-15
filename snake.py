@@ -1,4 +1,5 @@
-# 2. Új mérkőzés rögzítése
+# 3. Győztes kiválasztása
+# A legtöbb győzelem alapján kiválasztja a győztest
 import pygame
 import random
 import os
@@ -6,15 +7,14 @@ import json
 
 pygame.init()
 
-szelesseg = 1920
-magassag = 1080
+# Képernyő beállítása: resizeable, hogy a rendszer ablakozó vezérlői megmaradjanak
+szelesseg = 1280
+magassag = 720
 kigyo_meret = 20
+kepernyo = pygame.display.set_mode((szelesseg, magassag), pygame.RESIZABLE)
+pygame.display.set_caption("Kígyó Verseny")
 
-kepernyo = pygame.display.set_mode((szelesseg, magassag))
 ora = pygame.time.Clock()
-
-racs_szelesseg = szelesseg // kigyo_meret
-racs_magassag = magassag // kigyo_meret
 
 zold = (0, 255, 0)
 piros = (200, 40, 40)
@@ -22,22 +22,13 @@ sarga = (255, 255, 0)
 
 betutipus = pygame.font.SysFont(None, 40)
 
-# Alapértékek
-lives = 3
-pontszam = 0
-highscore = 0
-hossz = 1
-sarga_etel_x = -kigyo_meret
-sarga_etel_y = -kigyo_meret
-sarga_aktiv = False
-
 # Tournament alapértelmezett érték
 tournament = {
     "name": "Default Tournament",
-        "results" : [
-            {"player": "Alice", "wins": 0},
-            {"player": "Bob",   "wins": 0}
-        ]
+    "results": [
+        {"player": "Alice", "wins": 0},
+        {"player": "Bob", "wins": 0}
+    ]
 }
 
 def add_result(filename, player_name):
@@ -64,8 +55,27 @@ def add_result(filename, player_name):
     with open(filename, "w") as f:
         json.dump(data, f, indent=4)
 
+def gyoztes_kivalasztasa(tournament_data):
+    results = tournament_data.get("results", [])
+    if not results:
+        return "Nincs adat", 0
+    gyoztes = max(results, key=lambda x: x.get("wins", 0))
+    return gyoztes["player"], gyoztes["wins"]
+
 def alaphelyzet():
     return (szelesseg // 2) // kigyo_meret * kigyo_meret, (magassag // 2) // kigyo_meret * kigyo_meret
+
+# Alapértékek
+lives = 3
+pontszam = 0
+highscore = 0
+hossz = 1
+sarga_etel_x = -kigyo_meret
+sarga_etel_y = -kigyo_meret
+sarga_aktiv = False
+
+racs_szelesseg = szelesseg // kigyo_meret
+racs_magassag = magassag // kigyo_meret
 
 if os.path.exists("savegame.json"):
     with open("savegame.json", "r") as f:
@@ -119,12 +129,17 @@ else:
 
 fut = True
 game_over = False
-game_over_handled = False 
+game_over_handled = False
 
 while fut:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             fut = False
+        if event.type == pygame.VIDEORESIZE:
+            szelesseg, magassag = event.w, event.h
+            kepernyo = pygame.display.set_mode((szelesseg, magassag), pygame.RESIZABLE)
+            racs_szelesseg = szelesseg // kigyo_meret
+            racs_magassag = magassag // kigyo_meret
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT and sebesseg_x == 0:
                 sebesseg_x, sebesseg_y = -kigyo_meret, 0
@@ -191,7 +206,7 @@ while fut:
 
     if game_over:
         if not game_over_handled:
-            add_result("savegame.json", "Alice")  # csak egyszer hívjuk meg
+            add_result("savegame.json", "Alice")
             game_over_handled = True
 
         kepernyo.blit(betutipus.render("Game Over!", True, (255, 0, 0)), (szelesseg // 2 - 100, magassag // 2))
@@ -222,3 +237,7 @@ while fut:
             json.dump(adatok, f, indent=4)
 
 pygame.quit()
+
+# Győztes kiíratása
+nyertes_nev, nyertes_gyozelmek = gyoztes_kivalasztasa(tournament)
+print(f"A győztes: {nyertes_nev} {nyertes_gyozelmek} győzelemmel.")
