@@ -6,3 +6,7 @@ Ez egy egyszerű Snake játék Pythonban, Pygame használatával.
 
 ```bash
 pip install pygame
+
+## Újdonság ebben a branch-ben
+
+Ez egy tesztváltoztatás a `feature` branch-ben.
