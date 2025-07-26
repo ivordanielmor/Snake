@@ -1,7 +1,3 @@
-#HÁZI FELADAT: Építs egy mini-tornát, ahol legalább 4 különböző játékos játszik egymás ellen:
-# • Minden meccs után kérdezd meg a felhasználótól, ki győzött, rögzítsd a results listában, és mentsd el JSON-ben!
-# • A program végén jelenítsd meg a teljes ranglistát és a győztest!
-
 import pygame
 import random
 import json
