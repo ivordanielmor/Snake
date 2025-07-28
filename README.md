@@ -63,7 +63,7 @@ python snake.py
 
 ## 📷 Screenshot
 
-![Screenshot](./images/screenshot.png)
+![Screenshot](./images/snake.png)
 
 ---
 
