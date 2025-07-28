@@ -63,7 +63,7 @@ python snake.py
 
 ## 📷 Screenshot
 
-![Screenshot](./images/screenshot.png)
+![Screenshot](./images/screenshot.PNG)
 
 ---
 
@@ -142,7 +142,7 @@ python snake.py
 
 ## 📷 Képernyőkép
 
-![Képernyőkép](./images/screenshot.png)
+![Képernyőkép](./images/screenshot.PNG)
 
 ---
 
