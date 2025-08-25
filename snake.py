@@ -1,9 +1,36 @@
+# 1) Futam-naplózás hozzáadása a játékodhoz (CSV)
+# Célnapló: scores.csv (UTF-8). Minden befejezett futamról 1 sor. A helyes hely
+# a Game Over utáni tovább-lépés előtti pont, így biztosan pontosan egyszer kerül be egy futam.
+# a) Import-bővítés a snake.py tetején
+# b) Segédfüggvény a naplózáshoz (illeszd a fájlodba, pl. a pontszámot kiíró rész után):
+# c) Egyszer naplózzunk futamonként! Állíts be egy jelzőt; új játékosnál nullázd.
+
+# # --- Importok ---
 import pygame
 import random
 import json
+import os
+from datetime import datetime
+import pandas as pd  # <-- ÚJ
 
 pygame.init()
 
+# --- Segédfüggvény a futam-naplózáshoz ---
+def log_run_to_csv(player, score, length, lives_left, tournament_name, path="scores.csv"):
+    """Egy futam eredményének naplózása CSV-be (append)."""
+    row = {
+        "timestamp": datetime.now().isoformat(timespec="seconds"),
+        "player": player,
+        "score": int(score),
+        "length": int(length),
+        "lives_left": int(lives_left),
+        "tournament": tournament_name
+    }
+    df = pd.DataFrame([row])
+    header_needed = not os.path.exists(path)
+    df.to_csv(path, mode="a", header=header_needed, index=False, encoding="utf-8")
+
+# --- Játékosok bekérése ---
 def beker_jatekosok(szam=4):
     nevek = []
     print(f"Kérlek, add meg {szam} játékos nevét:")
@@ -80,7 +107,9 @@ sebesseg_x, sebesseg_y = kigyo_meret, 0
 fut = True
 game_over = False
 varakozas_jatekosszokozre = False
+logged_this_player = False  # <-- ÚJ
 
+# --- Főciklus ---
 while fut:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -102,6 +131,18 @@ while fut:
                     sebesseg_x, sebesseg_y = 0, kigyo_meret
             else:
                 if event.key in (pygame.K_SPACE, pygame.K_RETURN):
+                    # --- CSV naplózás, egyszer futamonként ---
+                    if not logged_this_player:
+                        current_player = allapotok[akt_jatekos_idx]["nev"]
+                        log_run_to_csv(
+                            player=current_player,
+                            score=pontszam,
+                            length=hossz,
+                            lives_left=lives,
+                            tournament_name=tournament["name"]
+                        )
+                        logged_this_player = True
+
                     allapotok[akt_jatekos_idx]["pontszam"] = pontszam
                     akt_jatekos_idx += 1
                     if akt_jatekos_idx >= len(allapotok):
@@ -125,6 +166,7 @@ while fut:
                         sebesseg_x, sebesseg_y = kigyo_meret, 0
                         game_over = False
                         varakozas_jatekosszokozre = False
+                        logged_this_player = False  # <-- új játékosnál nullázás
 
     if not game_over and not varakozas_jatekosszokozre:
         kigyo_x += sebesseg_x
@@ -159,7 +201,7 @@ while fut:
             sarga_etel_x, sarga_etel_y = uj_etel_pozicio()
             sarga_aktiv = True
 
-    # RAJZOLÁS
+    # --- RAJZOLÁS ---
     kepernyo.fill((0, 0, 0))
     pygame.draw.rect(kepernyo, (50, 50, 50), (palya_bal, palya_felső, palya_jobb - palya_bal, palya_also - palya_felső))
     for x, y in kigyo_test:
@@ -182,6 +224,7 @@ while fut:
 
 pygame.quit()
 
+# --- Állapot mentése JSON-be ---
 adat["tournament"] = tournament
 with open("savegame.json", "w") as f:
     json.dump(adat, f, indent=4)

@@ -1,28 +1,4 @@
 {
-    "snake_positions": [
-        [
-            20,
-            600
-        ],
-        [
-            0,
-            600
-        ]
-    ],
-    "direction": "left",
-    "score": 1,
-    "highscore": 7,
-    "red_food": [
-        1160,
-        400
-    ],
-    "yellow_food": [
-        1020,
-        380
-    ],
-    "yellow_active": true,
-    "length": 2,
-    "lives": 1,
     "tournament": {
         "name": "K\u00edgy\u00f3 Verseny",
         "results": [
