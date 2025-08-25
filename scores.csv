@@ -1,5 +1,9 @@
-2025-08-25T14:41:43,m,5,6,0,Kígyó Verseny,1,2,11.13
-2025-08-25T14:41:53,o,2,3,0,Kígyó Verseny,0,2,10.51
-2025-08-25T14:42:01,r,1,2,0,Kígyó Verseny,0,1,8.33
-2025-08-25T14:42:04,e,0,1,0,Kígyó Verseny,0,0,2.51
-2025-08-25T14:52:15,m,4,5,0,Kígyó Verseny,1,1,13.83
+timestamp,player,score,length,lives_left,tournament
+2025-08-25T22:10:00,Anya,5,6,0,Kígyó Verseny
+2025-08-25T22:11:00,Apa,2,3,0,Kígyó Verseny
+2025-08-25T22:12:00,Flóra,1,2,0,Kígyó Verseny
+2025-08-25T22:13:00,Mór,0,1,0,Kígyó Verseny
+2025-08-25T22:24:20,Apa,3,4,0,Kígyó Verseny
+2025-08-25T22:24:50,Anya,9,10,0,Kígyó Verseny
+2025-08-25T22:25:27,Mór,15,16,0,Kígyó Verseny
+2025-08-25T22:25:43,Flóra,5,6,0,Kígyó Verseny
