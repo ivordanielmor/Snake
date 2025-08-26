@@ -1,13 +1,17 @@
-# Apa
+# HÁZI FELADAT
+# Top 5 futam: ki volt az 5 legjobb (player + score + timestamp)? Tipp: df.nlargest(5, "score").
+# Heti összesítés: df.set_index("timestamp").groupby("player").resample("W")["score"].sum(), majd heti kumulált pont.
+# Mentés: scores_weekly.csv, scores_weekly_cum.csv.
+# Mini kihívás: írd ki a HUD-ra a játékos eddigi összpontját a CSV-ből beolvasva a futam elején.
 
-# # --- Importok ---
+# --- Importok ---
 import pygame
 import random
 import json
 import os
 from datetime import datetime
 import pandas as pd
-import time  # ÚJ: Időméréshez
+import time
 
 pygame.init()
 
@@ -21,9 +25,9 @@ def log_run_to_csv(player, score, length, lives_left, tournament_name, yellow_ea
         "length": int(length),
         "lives_left": int(lives_left),
         "tournament": tournament_name,
-        "yellow_eaten": int(yellow_eaten),  # ÚJ: Sárga ételek száma
-        "red_eaten": int(red_eaten),        # ÚJ: Piros ételek száma
-        "duration_s": int(duration_s)       # ÚJ: Futam időtartama másodpercekben
+        "yellow_eaten": int(yellow_eaten),
+        "red_eaten": int(red_eaten),
+        "duration_s": int(duration_s)
     }
     df = pd.DataFrame([row])
     header_needed = not os.path.exists(path)
@@ -60,7 +64,7 @@ except FileNotFoundError:
 # --- PYGAME BEÁLLÍTÁSOK ---
 szelesseg, magassag = 1280, 720
 kigyo_meret = 20
-hud_magassag = 120
+hud_magassag = 200   # <-- NAGYOBB HUD, hogy ne lógjanak ki a szövegek
 palya_bal, palya_felső = 0, hud_magassag
 palya_jobb, palya_also = szelesseg, magassag
 
@@ -95,9 +99,16 @@ akt_jatekos_idx = 0
 
 def jatek_indito():
     x, y = alaphelyzet()
-    return x, y, [(x, y)], kigyo_meret, 0, 3, 1, 0, 0, time.time()  # ÚJ: yellow_eaten, red_eaten, start_time
+    # Összpontszám kiszámítása az aktuális játékoshoz a scores.csv-ből
+    total_score = 0
+    if os.path.exists("scores.csv"):
+        df = pd.read_csv("scores.csv")
+        if akt_jatekos_idx < len(allapotok):
+            current_player = allapotok[akt_jatekos_idx]["nev"]
+            total_score = df[df["player"] == current_player]["score"].sum()
+    return x, y, [(x, y)], kigyo_meret, 0, 3, 1, 0, 0, time.time(), total_score
 
-kigyo_x, kigyo_y, kigyo_test, kigyo_meret, pontszam, lives, hossz, yellow_eaten, red_eaten, start_time = jatek_indito()
+kigyo_x, kigyo_y, kigyo_test, kigyo_meret, pontszam, lives, hossz, yellow_eaten, red_eaten, start_time, total_score = jatek_indito()
 piros_etelx, piros_etely = uj_etel_pozicio()
 sarga_etel_x, sarga_etel_y = -kigyo_meret, -kigyo_meret
 sarga_aktiv = False
@@ -133,16 +144,16 @@ while fut:
                     # --- CSV naplózás, egyszer futamonként ---
                     if not logged_this_player:
                         current_player = allapotok[akt_jatekos_idx]["nev"]
-                        duration_s = time.time() - start_time  # ÚJ: Futam időtartama
+                        duration_s = time.time() - start_time
                         log_run_to_csv(
                             player=current_player,
                             score=pontszam,
                             length=hossz,
                             lives_left=lives,
                             tournament_name=tournament["name"],
-                            yellow_eaten=yellow_eaten,  # ÚJ
-                            red_eaten=red_eaten,        # ÚJ
-                            duration_s=duration_s       # ÚJ
+                            yellow_eaten=yellow_eaten,
+                            red_eaten=red_eaten,
+                            duration_s=duration_s
                         )
                         logged_this_player = True
 
@@ -162,7 +173,7 @@ while fut:
                         pygame.time.wait(5000)
                         fut = False
                     else:
-                        kigyo_x, kigyo_y, kigyo_test, kigyo_meret, pontszam, lives, hossz, yellow_eaten, red_eaten, start_time = jatek_indito()
+                        kigyo_x, kigyo_y, kigyo_test, kigyo_meret, pontszam, lives, hossz, yellow_eaten, red_eaten, start_time, total_score = jatek_indito()
                         piros_etelx, piros_etely = uj_etel_pozicio()
                         sarga_etel_x, sarga_etel_y = -kigyo_meret, -kigyo_meret
                         sarga_aktiv = False
@@ -193,13 +204,13 @@ while fut:
         if kigyo_x == piros_etelx and kigyo_y == piros_etely:
             hossz += 1
             pontszam += 1
-            red_eaten += 1  # ÚJ: Piros étel számláló növelése
+            red_eaten += 1
             piros_etelx, piros_etely = uj_etel_pozicio()
 
         if sarga_aktiv and kigyo_x == sarga_etel_x and kigyo_y == sarga_etel_y:
             hossz += 3
             pontszam += 3
-            yellow_eaten += 1  # ÚJ: Sárga étel számláló növelése
+            yellow_eaten += 1
             sarga_aktiv = False
             sarga_etel_x, sarga_etel_y = -kigyo_meret, -kigyo_meret
         elif not sarga_aktiv and random.random() < 0.01:
@@ -216,10 +227,20 @@ while fut:
         pygame.draw.rect(kepernyo, szinek["sarga"], (sarga_etel_x, sarga_etel_y, kigyo_meret, kigyo_meret))
     if akt_jatekos_idx < len(allapotok):
         kepernyo.blit(betutipus.render(f"Játékos: {allapotok[akt_jatekos_idx]['nev']}", True, szinek["feher"]), (10, 10))
-    kepernyo.blit(betutipus.render(f"Pont: {pontszam}", True, szinek["feher"]), (10, 40))
-    kepernyo.blit(betutipus.render(f"Életek: {lives}", True, szinek["feher"]), (10, 70))
-    kepernyo.blit(betutipus.render(f"Piros ételek: {red_eaten}", True, szinek["feher"]), (10, 100))  # ÚJ: Kijelzés
-    kepernyo.blit(betutipus.render(f"Sárga ételek: {yellow_eaten}", True, szinek["feher"]), (10, 130))  # ÚJ: Kijelzés
+
+    # --- Bal oldali statisztikák automatikusan sorban ---
+    sor_y = 40
+    sorok = [
+        f"Pont: {pontszam}",
+        f"Életek: {lives}",
+        f"Piros ételek: {red_eaten}",
+        f"Sárga ételek: {yellow_eaten}",
+        f"Összpont: {total_score}"
+    ]
+    for i, szoveg in enumerate(sorok):
+        kepernyo.blit(betutipus.render(szoveg, True, szinek["feher"]), (10, sor_y + i * 25))
+
+    # --- Jobb oldali összpontok ---
     draw_pontok(kepernyo, allapotok, betutipus, szelesseg - 280, 10)
 
     if varakozas_jatekosszokozre:
@@ -235,4 +256,30 @@ pygame.quit()
 adat["tournament"] = tournament
 with open("savegame.json", "w") as f:
     json.dump(adat, f, indent=4)
-    
+
+# --- Házi feladat: Top 5 futam és heti összesítés ---
+if os.path.exists("scores.csv"):
+    df = pd.read_csv("scores.csv")
+    df["timestamp"] = pd.to_datetime(df["timestamp"])
+
+    # 1. Top 5 futam
+    top_5_runs = df.nlargest(5, "score")[["player", "score", "timestamp"]]
+    print("\nTop 5 futam:")
+    print(top_5_runs)
+
+    # 2. Heti összesítés
+    weekly_scores = df.set_index("timestamp").groupby("player").resample("W")["score"].sum().reset_index()
+    weekly_scores.to_csv("scores_weekly.csv", index=False, encoding="utf-8")
+    print("\nHeti összesítés (scores_weekly.csv):")
+    print(weekly_scores)
+
+    # 3. Heti kumulált pontszám
+    weekly_cum_scores = weekly_scores.groupby("player")["score"].cumsum().reset_index()
+    weekly_cum_scores["player"] = weekly_scores["player"]
+    weekly_cum_scores["timestamp"] = weekly_scores["timestamp"]
+    weekly_cum_scores = weekly_cum_scores[["timestamp", "player", "score"]]
+    weekly_cum_scores.to_csv("scores_weekly_cum.csv", index=False, encoding="utf-8")
+    print("\nHeti kumulált pontszám (scores_weekly_cum.csv):")
+    print(weekly_cum_scores)
+else:
+    print("A scores.csv fájl nem található.")
