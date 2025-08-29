@@ -1,27 +1,26 @@
+# analyze_scores_pandas.py
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
-import os
+from matplotlib.ticker import MaxNLocator
 
-# Ellenőrizd, hogy a fájl létezik-e és nem üres-e
-if not os.path.exists("scores.csv") or os.path.getsize("scores.csv") == 0:
+CSV = "scores.csv"
+if not os.path.exists(CSV) or os.path.getsize(CSV) == 0:
     print("Hiba: A scores.csv fájl nem létezik vagy üres. Kérlek, játssz egy menetet a snake.py-val!")
-    exit()
+    raise SystemExit(1)
 
-# Beolvasás
+# Beolvasás – toleráns hibás sorokra
 df = pd.read_csv(
-    "scores.csv",
+    CSV,
     usecols=["timestamp", "player", "score", "length", "lives_left", "tournament"],
     parse_dates=["timestamp"],
-    date_format="%Y-%m-%dT%H:%M:%S",
-    encoding="utf-8"
+    encoding="utf-8",
+    engine="python",
+    on_bad_lines="skip",
 )
-print("df tartalma:")
-print(df)
 
-# Dátum konverzió
-df["date"] = df["timestamp"].dt.date
-print("df dátum konverzió után:")
-print(df)
+# Napra normalizált dátum (datetime64 marad)
+df["date"] = df["timestamp"].dt.normalize()
 
 # Napi összegzés
 daily = (
@@ -29,20 +28,12 @@ daily = (
       .sum()
       .sort_values(["player", "date"])
 )
-print("daily tartalma:")
-print(daily)
 
-# Kumulált pontszám
+# Kumulált pont és 3-as gördülő átlag
 daily["cum_score"] = daily.groupby("player")["score"].cumsum()
-print("daily kumulált pontszám után:")
-print(daily)
-
-# 3-as gördülő átlag
 daily["roll3"] = (
-    daily.sort_values(["player", "date"])
-         .groupby("player")["score"]
-         .rolling(window=3, min_periods=1)
-         .mean()
+    daily.groupby("player", group_keys=False)["score"]
+         .rolling(window=3, min_periods=1).mean()
          .reset_index(level=0, drop=True)
 )
 
@@ -50,14 +41,19 @@ daily["roll3"] = (
 daily.to_csv("scores_daily_with_trends.csv", index=False, encoding="utf-8")
 print("Mentve: scores_daily_with_trends.csv")
 
-# Grafikon
-wide_cum = daily.pivot(index="date", columns="player", values="cum_score")
-print("wide_cum tartalma:")
-print(wide_cum)
+# Gyors kumulált grafikon
+wide_cum = daily.pivot(index="date", columns="player", values="cum_score").sort_index()
 ax = wide_cum.plot(title="Kumulált pontszám – gyors nézet", figsize=(9, 4))
 ax.set_xlabel("Dátum")
 ax.set_ylabel("Kumulált pontszám")
-# Dátumtengely korlátozása
-ax.set_xlim(pd.Timestamp("2025-08-25"), pd.Timestamp("2025-08-26"))
+ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+
+# Dinamikus időablak: utolsó 14 nap, ha van adat
+if not wide_cum.empty:
+    end = wide_cum.index.max()
+    start = end - pd.Timedelta(days=13)
+    ax.set_xlim(start, end)
+
+ax.grid(True, alpha=0.3)
 plt.tight_layout()
 plt.show()

@@ -1,6 +1,7 @@
 import pygame
 import random
 import json
+import csv
 import os
 from datetime import datetime
 import pandas as pd
@@ -43,8 +44,17 @@ def futam_naplozas_csv_be(player: str, score: float, length: int, lives_left: in
         "duration_s": int(duration_s)
     }
     df = pd.DataFrame([sor])
-    header_needed = not os.path.exists(path)
-    df.to_csv(path, mode="a", header=header_needed, index=False, encoding="utf-8")
+    header_needed = (not os.path.exists(path)) or os.path.getsize(path) == 0
+    df.to_csv(
+        path,
+        mode="a",
+        header=header_needed,
+        index=False,
+        encoding="utf-8",
+        sep=",",
+        quoting=csv.QUOTE_MINIMAL,
+        lineterminator="\n",
+    )
 
 # --- Játékosok bekérése ---
 def jatekosok_bekerese(szam: int = 4) -> list:
@@ -192,11 +202,29 @@ def jatek_inditas() -> tuple:
     """
     x, y = alap_helyzet()
     total_score = 0
-    if os.path.exists("scores.csv"):
-        df = pd.read_csv("scores.csv")
-        if akt_jatekos_idx < len(allapotok):
-            current_player = allapotok[akt_jatekos_idx]["nev"]
-            total_score = df[df["player"] == current_player]["score"].sum()
+    path = "scores.csv"
+
+    if os.path.exists(path) and os.path.getsize(path) > 0:
+        try:
+            df = pd.read_csv(
+                path,
+                sep=",",
+                engine="python",
+                on_bad_lines="skip",
+                encoding="utf-8",
+            )
+            if akt_jatekos_idx < len(allapotok):
+                current_player = allapotok[akt_jatekos_idx]["nev"]
+                if "player" in df.columns and "score" in df.columns:
+                    total_score = (
+                        pd.to_numeric(
+                            df.loc[df["player"] == current_player, "score"],
+                            errors="coerce"
+                        ).fillna(0).astype("int64").sum()
+                    )
+        except Exception:
+            total_score = 0
+
     return x, y, [(x, y)], kigyo_meret, 0, 3, 1, 0, 0, time.time(), total_score
 
 # Kezdeti értékek
@@ -217,6 +245,14 @@ logged_this_player = False
 while fut:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            if not logged_this_player:
+                current_player = allapotok[akt_jatekos_idx]["nev"]
+                duration_s = time.time() - start_time
+                futam_naplozas_csv_be(
+                    current_player, pontszam, hossz, lives,
+                    tournament["name"], yellow_eaten, red_eaten, duration_s
+                )
+                logged_this_player = True
             fut = False
         if event.type == pygame.VIDEORESIZE:
             szelesseg, magassag = event.w, event.h
@@ -279,6 +315,14 @@ while fut:
                 sebesseg_x, sebesseg_y = kigyo_meret, 0
             else:
                 allapotok[akt_jatekos_idx]["pontszam"] = pontszam
+                if not logged_this_player:
+                    current_player = allapotok[akt_jatekos_idx]["nev"]
+                    duration_s = time.time() - start_time
+                    futam_naplozas_csv_be(
+                        current_player, pontszam, hossz, lives,
+                        tournament["name"], yellow_eaten, red_eaten, duration_s
+                    )
+                    logged_this_player = True
                 game_over = True
                 varakozas_jatekosokre = True
             continue
